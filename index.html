@@ -1,1 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WealthCraft - SIP Calculator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="text-center my-5">
+            <h1 class="display-4">WealthCraft</h1>
+            <p class="lead">Your Systematic Investment Plan Calculator</p>
+        </header>
 
+        <div class="row">
+            <div class="col-md-6">
+                <div class="calculator-card card shadow">
+                    <div class="card-body">
+                        <h3 class="card-title">SIP Calculator</h3>
+                        <form id="sipForm">
+                            <div class="mb-3">
+                                <label for="monthlyInvestment" class="form-label">Monthly Investment (₹)</label>
+                                <input type="number" class="form-control" id="monthlyInvestment" value="5000" min="500" step="500">
+                            </div>
+                            <div class="mb-3">
+                                <label for="investmentPeriod" class="form-label">Investment Period (Years)</label>
+                                <input type="number" class="form-control" id="investmentPeriod" value="10" min="1" max="40">
+                            </div>
+                            <div class="mb-3">
+                                <label for="expectedReturn" class="form-label">Expected Annual Return (%)</label>
+                                <input type="number" class="form-control" id="expectedReturn" value="12" min="1" max="30" step="0.1">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Calculate</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="results-card card shadow">
+                    <div class="card-body">
+                        <h3 class="card-title">Projected Returns</h3>
+                        <div id="results" class="text-center py-4">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="result-box">
+                                        <h5>Invested Amount</h5>
+                                        <p id="investedAmount" class="value">₹0</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="result-box">
+                                        <h5>Estimated Returns</h5>
+                                        <p id="estimatedReturns" class="value">₹0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="total-value mt-4">
+                                <h4>Total Value</h4>
+                                <p id="totalValue" class="display-5">₹0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h3 class="card-title">Growth Visualization</h3>
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h3 class="card-title">Yearly Breakdown</h3>
+                        <div class="table-responsive">
+                            <table class="table" id="yearlyTable">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Invested</th>
+                                        <th>Returns</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h3 class="card-title">Investment Composition</h3>
+                        <canvas id="compositionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-4 mt-5">
+        <p>© 2023 WealthCraft SIP Calculator</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>
