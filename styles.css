@@ -106,4 +106,112 @@ footer {
     .value {
         font-size: 1.2rem;
     }
+}:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3a0ca3;
+    --accent-color: #4cc9f0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    color: var(--dark-color);
+}
+
+.calculator-card, .results-card {
+    border-radius: 15px;
+    border: none;
+}
+
+.calculator-card {
+    background-color: white;
+}
+
+.results-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.result-box {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.result-box h5 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.total-value {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.total-value h4 {
+    margin-bottom: 10px;
+}
+
+.display-5 {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border: none;
+    padding: 10px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.form-control {
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+}
+
+.form-control:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.25rem rgba(76, 201, 240, 0.25);
+}
+
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+footer {
+    background-color: var(--dark-color);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .display-5 {
+        font-size: 2rem;
+    }
+    
+    .value {
+        font-size: 1.2rem;
+    }
 }
