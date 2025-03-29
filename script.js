@@ -1,208 +1,104 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize charts
-    const growthCtx = document.getElementById('growthChart').getContext('2d');
-    const compositionCtx = document.getElementById('compositionChart').getContext('2d');
-    
-    let growthChart = new Chart(growthCtx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Investment Growth (₹)',
-                data: [],
-                borderColor: '#4361ee',
-                backgroundColor: 'rgba(67, 97, 238, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return '₹' + context.raw.toLocaleString('en-IN');
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '₹' + value.toLocaleString('en-IN');
-                        }
-                    }
-                }
-            }
-        }
-    });
-    
-    let compositionChart = new Chart(compositionCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Invested Amount', 'Estimated Returns'],
-            datasets: [{
-                data: [0, 0],
-                backgroundColor: [
-                    '#3a0ca3',
-                    '#4cc9f0'
-                ],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
-                            return `${label}: ₹${value.toLocaleString('en-IN')} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-    
-    // Form submission handler
-    document.getElementById('sipForm').addEventListener('submit', function(e) {
+    const form = document.getElementById('sip-form');
+    const resultsDiv = document.getElementById('results');
+    const chartCtx = document.getElementById('sip-chart').getContext('2d');
+    let sipChart;
+
+    // Add Chart.js CDN dynamically
+    const chartScript = document.createElement('script');
+    chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    document.head.appendChild(chartScript);
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
         calculateSIP();
     });
-    
-    // Input change handlers for real-time calculation
-    document.getElementById('monthlyInvestment').addEventListener('input', calculateSIP);
-    document.getElementById('investmentPeriod').addEventListener('input', calculateSIP);
-    document.getElementById('expectedReturn').addEventListener('input', calculateSIP);
-    
-    // Initial calculation
-    calculateSIP();
-    
+
     function calculateSIP() {
         // Get input values
-        const monthlyInvestment = parseFloat(document.getElementById('monthlyInvestment').value) || 0;
-        const investmentPeriod = parseInt(document.getElementById('investmentPeriod').value) || 0;
-        const expectedReturn = parseFloat(document.getElementById('expectedReturn').value) || 0;
-        
+        const monthlyInvestment = parseFloat(document.getElementById('monthly-investment').value);
+        const annualReturn = parseFloat(document.getElementById('annual-return').value);
+        const duration = parseInt(document.getElementById('investment-duration').value);
+        const compounding = document.getElementById('compounding-frequency').value;
+
         // Validate inputs
-        if (monthlyInvestment <= 0 || investmentPeriod <= 0 || expectedReturn <= 0) {
+        if (isNaN(monthlyInvestment) || isNaN(annualReturn) || isNaN(duration) || 
+            monthlyInvestment <= 0 || annualReturn <= 0 || duration <= 0) {
+            alert('Please enter valid positive numbers for all fields');
             return;
         }
-        
-        // Calculate values
-        const months = investmentPeriod * 12;
-        const monthlyRate = expectedReturn / 12 / 100;
-        
-        // Future value of SIP formula
-        const futureValue = monthlyInvestment * 
-                          (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * 
-                          (1 + monthlyRate);
-        
-        const investedAmount = monthlyInvestment * months;
-        const estimatedReturns = futureValue - investedAmount;
-        
-        // Update results display
-        document.getElementById('investedAmount').textContent = formatCurrency(investedAmount);
-        document.getElementById('estimatedReturns').textContent = formatCurrency(estimatedReturns);
-        document.getElementById('totalValue').textContent = formatCurrency(futureValue, true);
-        
-        // Update charts
-        updateGrowthChart(monthlyInvestment, investmentPeriod, expectedReturn);
-        updateCompositionChart(investedAmount, estimatedReturns);
-        
-        // Update yearly breakdown table
-        updateYearlyTable(monthlyInvestment, investmentPeriod, expectedReturn);
-    }
-    
-    function updateGrowthChart(monthlyInvestment, years, expectedReturn) {
-        const labels = [];
-        const data = [];
-        
-        for (let year = 1; year <= years; year++) {
-            labels.push(`Year ${year}`);
-            
-            const months = year * 12;
-            const monthlyRate = expectedReturn / 12 / 100;
-            const futureValue = monthlyInvestment * 
-                              (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * 
-                              (1 + monthlyRate);
-            
-            data.push(Math.round(futureValue));
+
+        // Calculate based on compounding frequency
+        let periodsPerYear, ratePerPeriod;
+        switch(compounding) {
+            case 'monthly':
+                periodsPerYear = 12;
+                ratePerPeriod = annualReturn / 12 / 100;
+                break;
+            case 'quarterly':
+                periodsPerYear = 4;
+                ratePerPeriod = annualReturn / 4 / 100;
+                break;
+            case 'annually':
+                periodsPerYear = 1;
+                ratePerPeriod = annualReturn / 100;
+                break;
         }
-        
-        growthChart.data.labels = labels;
-        growthChart.data.datasets[0].data = data;
-        growthChart.update();
+
+        const totalPeriods = duration * periodsPerYear;
+        const totalInvestment = monthlyInvestment * 12 * duration;
+
+        // SIP calculation formula
+        const maturityValue = monthlyInvestment * 
+            ((Math.pow(1 + ratePerPeriod, totalPeriods) - 1) / ratePerPeriod) * 
+            (1 + ratePerPeriod);
+
+        const estimatedReturns = maturityValue - totalInvestment;
+
+        // Display results
+        document.getElementById('total-invested').textContent = 
+            `Total Invested: ₹${totalInvestment.toLocaleString('en-IN')}`;
+        document.getElementById('estimated-returns').textContent = 
+            `Estimated Returns: ₹${estimatedReturns.toLocaleString('en-IN')}`;
+        document.getElementById('total-maturity').textContent = 
+            `Maturity Value: ₹${maturityValue.toLocaleString('en-IN')}`;
+
+        resultsDiv.classList.remove('hidden');
+
+        // Update chart
+        updateChart(totalInvestment, estimatedReturns);
     }
-    
-    function updateCompositionChart(investedAmount, estimatedReturns) {
-        compositionChart.data.datasets[0].data = [investedAmount, estimatedReturns];
-        compositionChart.update();
-    }
-    
-    function updateYearlyTable(monthlyInvestment, years, expectedReturn) {
-        const tableBody = document.querySelector('#yearlyTable tbody');
-        tableBody.innerHTML = '';
-        
-        let cumulativeInvestment = 0;
-        let previousFutureValue = 0;
-        
-        for (let year = 1; year <= years; year++) {
-            const yearlyInvestment = monthlyInvestment * 12;
-            cumulativeInvestment += yearlyInvestment;
-            
-            const months = year * 12;
-            const monthlyRate = expectedReturn / 12 / 100;
-            const futureValue = monthlyInvestment * 
-                              (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * 
-                              (1 + monthlyRate);
-            
-            const yearlyReturns = futureValue - cumulativeInvestment;
-            
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${year}</td>
-                <td>${formatCurrency(cumulativeInvestment)}</td>
-                <td>${formatCurrency(yearlyReturns)}</td>
-                <td>${formatCurrency(futureValue)}</td>
-            `;
-            
-            tableBody.appendChild(row);
-            previousFutureValue = futureValue;
+
+    function updateChart(invested, returns) {
+        if (sipChart) {
+            sipChart.destroy();
         }
-    }
-    
-    function formatCurrency(amount, large = false) {
-        const options = {
-            maximumFractionDigits: 0,
-            style: 'currency',
-            currency: 'INR'
-        };
-        
-        if (large) {
-            return amount.toLocaleString('en-IN', {
-                maximumFractionDigits: 0,
-                style: 'currency',
-                currency: 'INR',
-                minimumFractionDigits: 0
-            }).replace('₹', '₹');
-        }
-        
-        return '₹' + amount.toLocaleString('en-IN', {maximumFractionDigits: 0});
+
+        sipChart = new Chart(chartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Total Invested', 'Estimated Returns'],
+                datasets: [{
+                    data: [invested, returns],
+                    backgroundColor: ['#3b82f6', '#10b981'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ₹${context.raw.toLocaleString('en-IN')}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 });
-
