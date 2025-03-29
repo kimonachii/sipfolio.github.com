@@ -1,186 +1,114 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIP Calculator</title>
+    <title>Advanced SIP Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+        .dark-mode {
+            background-color: #1a202c;
+            color: #f7fafc;
         }
-        .calculator {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        .results {
-            margin-top: 20px;
-            display: none;
-        }
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-        }
-        .result-value {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .chart-container {
-            margin-top: 20px;
-            height: 200px;
+        .dark-mode .card {
+            background-color: #2d3748;
+            border-color: #4a5568;
         }
     </style>
 </head>
-<body>
-    <div class="calculator">
-        <h1>SIP Calculator</h1>
-        <div class="form-group">
-            <label for="amount">Monthly Investment (₹)</label>
-            <input type="number" id="amount" placeholder="e.g., 5000">
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-600">Advanced SIP Calculator</h1>
+            <p class="text-gray-600">Plan your investments with precision</p>
+            <button id="themeToggle" class="mt-2 px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">
+                <i class="fas fa-moon"></i> Dark Mode
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Calculator Form -->
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Investment Details</h2>
+                <form id="sipForm" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700">Monthly Investment (₹)</label>
+                        <input type="number" id="monthlyInvestment" class="w-full p-2 border rounded" min="500" step="500" value="5000" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Expected Annual Return (%)</label>
+                        <input type="number" id="annualReturn" class="w-full p-2 border rounded" min="1" max="30" step="0.1" value="12" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Investment Period (Years)</label>
+                        <input type="number" id="years" class="w-full p-2 border rounded" min="1" max="50" value="10" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Include Inflation Adjustment</label>
+                        <input type="checkbox" id="inflationAdjust" class="mr-2">
+                        <span class="text-sm text-gray-500">(6% inflation assumed)</span>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">
+                        <i class="fas fa-calculator mr-2"></i> Calculate
+                    </button>
+                </form>
+            </div>
+
+            <!-- Results -->
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Results</h2>
+                <div id="results" class="space-y-4 hidden">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-4 rounded">
+                            <p class="text-sm text-blue-600">Total Invested</p>
+                            <p id="totalInvested" class="text-2xl font-bold">₹0</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded">
+                            <p class="text-sm text-green-600">Estimated Returns</p>
+                            <p id="estimatedReturns" class="text-2xl font-bold">₹0</p>
+                        </div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded">
+                        <p class="text-sm text-purple-600">Total Value</p>
+                        <p id="totalValue" class="text-3xl font-bold">₹0</p>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+                <div id="loading" class="text-center py-8 hidden">
+                    <i class="fas fa-spinner fa-spin text-2xl text-blue-600"></i>
+                    <p class="mt-2">Calculating...</p>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="years">Investment Period (Years)</label>
-            <input type="number" id="years" placeholder="e.g., 10">
-        </div>
-        <div class="form-group">
-            <label for="rate">Expected Annual Return (%)</label>
-            <input type="number" id="rate" placeholder="e.g., 12">
-        </div>
-        <button id="calculate-btn">Calculate</button>
-        
-        <div class="results" id="results">
-            <h2>Investment Summary</h2>
-            <div class="result-item">
-                <span>Monthly Investment:</span>
-                <span class="result-value" id="monthly-investment"></span>
-            </div>
-            <div class="result-item">
-                <span>Investment Period:</span>
-                <span class="result-value" id="investment-period"></span>
-            </div>
-            <div class="result-item">
-                <span>Expected Return Rate:</span>
-                <span class="result-value" id="return-rate"></span>
-            </div>
-            <div class="result-item">
-                <span>Total Investment:</span>
-                <span class="result-value" id="total-investment"></span>
-            </div>
-            <div class="result-item">
-                <span>Estimated Returns:</span>
-                <span class="result-value" id="estimated-returns"></span>
-            </div>
-            <div class="result-item">
-                <span>Total Value:</span>
-                <span class="result-value" id="total-value"></span>
+
+        <!-- History Section -->
+        <div class="mt-8 card bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Calculation History</h2>
+            <div id="history" class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="py-2 px-4">Date</th>
+                            <th class="py-2 px-4">Monthly (₹)</th>
+                            <th class="py-2 px-4">Return (%)</th>
+                            <th class="py-2 px-4">Years</th>
+                            <th class="py-2 px-4">Invested (₹)</th>
+                            <th class="py-2 px-4">Returns (₹)</th>
+                            <th class="py-2 px-4">Total (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <!-- History will be loaded here -->
+                    </tbody>
+                </table>
             </div>
         </div>
-        
-        <div class="chart-container" id="chart"></div>
     </div>
 
-    <script>
-        document.getElementById('calculate-btn').addEventListener('click', async () => {
-            const amount = parseFloat(document.getElementById('amount').value);
-            const years = parseFloat(document.getElementById('years').value);
-            const rate = parseFloat(document.getElementById('rate').value);
-            
-            if (!amount || !years || !rate) {
-                alert('Please fill all fields');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/calculate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ amount, years, rate })
-                });
-                
-                const data = await response.json();
-                
-                // Display results
-                document.getElementById('monthly-investment').textContent = `₹${data.monthlyInvestment.toLocaleString()}`;
-                document.getElementById('investment-period').textContent = `${data.years} years`;
-                document.getElementById('return-rate').textContent = `${data.annualRate}%`;
-                document.getElementById('total-investment').textContent = `₹${data.investedAmount.toLocaleString()}`;
-                document.getElementById('estimated-returns').textContent = `₹${data.estimatedReturns.toLocaleString()}`;
-                document.getElementById('total-value').textContent = `₹${data.totalValue.toLocaleString()}`;
-                
-                document.getElementById('results').style.display = 'block';
-                
-                // Simple chart visualization
-                updateChart(data.investedAmount, data.estimatedReturns);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred while calculating');
-            }
-        });
-        
-        function updateChart(invested, returns) {
-            const chart = document.getElementById('chart');
-            chart.innerHTML = `
-                <div style="display: flex; height: 100%; align-items: flex-end;">
-                    <div style="flex: 1; background-color: #3498db; margin: 0 5px; height: ${invested/(invested+returns)*100}%; 
-                        display: flex; justify-content: center; align-items: flex-end; color: white; padding: 5px;">
-                        Invested
-                    </div>
-                    <div style="flex: 1; background-color: #2ecc71; margin: 0 5px; height: ${returns/(invested+returns)*100}%; 
-                        display: flex; justify-content: center; align-items: flex-end; color: white; padding: 5px;">
-                        Returns
-                    </div>
-                </div>
-                <div style="display: flex; justify-content: space-around; margin-top: 10px;">
-                    <div>Invested: ₹${invested.toLocaleString()}</div>
-                    <div>Returns: ₹${returns.toLocaleString()}</div>
-                </div>
-            `;
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
